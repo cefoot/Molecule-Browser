@@ -4,17 +4,19 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
+  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  IgnorableNamespaces="uap uap2 uap5 mp">
 
   <Identity
     Name="d32572e0-abac-4820-8074-90e162fb1ceb"
     Publisher="CN=cefoot"
-    Version="1.0.0.0" />
+    Version="1.0.6.0" />
 
   <mp:PhoneIdentity PhoneProductId="d32572e0-abac-4820-8074-90e162fb1ceb" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>molecula_uwp</DisplayName>
+    <DisplayName>molecula</DisplayName>
     <PublisherDisplayName>StereoKit</PublisherDisplayName>
     <Logo>Assets\Logo\Logo-50.png</Logo>
   </Properties>
@@ -32,12 +34,13 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="molecula_uwp.App">
       <uap:VisualElements
-        DisplayName="molecula_uwp"
+        DisplayName="molecula"
         Square150x150Logo="Assets\Logo\Logo-150.png"
         Square44x44Logo="Assets\Logo\Logo-44.png"
         Description="molecula_uwp"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Logo\Logo-Wide150.png" Square71x71Logo="Assets\Logo\Logo-71.png" Square310x310Logo="Assets\Logo\Logo-310.png">
+          <uap5:MixedRealityModel Path="Assets\Atom.glb" />
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
             <uap:ShowOn Tile="wide310x150Logo"/>
@@ -48,4 +51,8 @@
       </uap:VisualElements>
     </Application>
   </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient"/>
+  </Capabilities>
 </Package>

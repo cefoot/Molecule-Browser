@@ -9,7 +9,7 @@ using System;
 using Android.Graphics;
 using Java.Lang;
 using System.Threading.Tasks;
-using StereoKitApp;
+using molecula_shared;
 
 namespace StereoKit_Android
 {

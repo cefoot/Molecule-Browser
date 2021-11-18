@@ -35,13 +35,14 @@ namespace molecula_shared
         public void Loop()
         {
             // Create assets used by the app
-            Pose windowPose = new Pose(.4f, 0, -.5f, Quat.LookDir(1, 0, 1));
+            Pose windowPose = new Pose(.4f, 0, -.5f, Quat.LookDir(Input.Head.Forward * -1));
 
             Matrix floorTransform = Matrix.TS(0, -1.5f, 0, new Vec3(30, 0.1f, 30));
             Material floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
             var mat = Default.MaterialUI.Copy();
-            mat.SetColor("color", Color.BlackTransparent);
+            mat.SetColor("color", Color.HSV(0f, 0f, 1f, 0.3f));
+            mat.Transparency = Transparency.Blend;
             _atomMaterialMap[BndClr] = mat;
 
             LoadMolecule("Methanol");
