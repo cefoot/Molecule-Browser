@@ -26,7 +26,7 @@ namespace molecula_shared
             public void Draw()
             {
                 UI.Handle($"molecule_{Name}", ref Pose, Model.Bounds);
-                UI.Text(Model.Visuals[0].Name, TextAlign.Center);
+                //UI.Text(Model.Visuals[0].Name, TextAlign.Center);
                 Model.Draw(Pose.ToMatrix());
                 Text.Add(Name, Pose.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
             }
