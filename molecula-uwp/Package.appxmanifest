@@ -11,7 +11,7 @@
   <Identity
     Name="d32572e0-abac-4820-8074-90e162fb1ceb"
     Publisher="CN=cefoot"
-    Version="1.0.6.0" />
+    Version="1.0.7.0" />
 
   <mp:PhoneIdentity PhoneProductId="d32572e0-abac-4820-8074-90e162fb1ceb" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
