@@ -15,8 +15,6 @@ namespace molecula_shared
             public PCCompound RawData;
             public int CID;
 
-            private static RestClient _client = new RestClient("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/");
-
             public static float MoleculeScale = 0.1f;
 
             public static float AtomDiameter = 0.05f;
@@ -36,15 +34,12 @@ namespace molecula_shared
             {
                 //client.Authenticator = new HttpBasicAuthenticator("username", "password");
 
-                var request = new RestRequest($"name/{moleculeName}/record/JSON/?record_type=3d", DataFormat.Json);
-
-                var recData = await _client.GetAsync<RecordData>(request);
+                var recData = await PubChemUtils.GetData<RecordData>($"name/{moleculeName}/record/JSON/?record_type=3d");
                 if (recData == null || recData.PC_Compounds == null)
                 {
                     throw new System.ArgumentException($"no molecule found with name '{moleculeName}'");
                 }
-                request = new RestRequest($"cid/{recData.PC_Compounds[0].id.id.cid}/description/JSON", DataFormat.Json);
-                var moleculeInfo = _client.GetAsync<Root_InformationData>(request);
+                var moleculeInfoRequest = PubChemUtils.GetData<Root_InformationData>($"cid/{recData.PC_Compounds[0].id.id.cid}/description/JSON");
 
                 var mdl = new Model();
                 foreach (var atom in recData.PC_Compounds[0].AtomList)
@@ -83,7 +78,7 @@ namespace molecula_shared
                         }
                     }
                 }
-                var res = await moleculeInfo;
+                var res = await moleculeInfoRequest;
                 var pos = Input.Head.position + Input.Head.Forward;
                 var molecule = new MoleculeData
                 {
