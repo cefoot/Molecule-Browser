@@ -115,13 +115,13 @@ namespace molecula_shared
                     var tmpPnt = mddlPnt;
                     if (bndData.Value > 1)
                     {
-                        tmpPnt += bndDirNorm * i;
+                        tmpPnt += bndDirNorm * (-0.5f + i);
                     }
                     //Quat.FromAngles(0f, 0f, 360f / bndData.Value).
                     System.Diagnostics.Debug.WriteLine($"creating model node for bonding ({atom.GetSymbol()}-{bndData.Key.GetSymbol()})'{atom.ElementOrderNumber}' [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
 
                     mdl.AddNode(
-                        $"{atom.GetSymbol()}_{bndData.Key.GetSymbol()}_{Guid.NewGuid().ToString()}",
+                        $"{atom.GetSymbol()}_{bndData.Key.GetSymbol()}_{Guid.NewGuid()}",
                         Matrix.TRS(
                             tmpPnt,
                             Quat.LookDir(bndDir),
