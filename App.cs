@@ -38,6 +38,8 @@ namespace Molecula
                 Mesh.GenerateRoundedCube(Vec3.One * 0.1f, 0.02f),
                 Default.MaterialUI);
 
+            //keyboardSprite =
+
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
 
@@ -84,13 +86,17 @@ namespace Molecula
 
         private void MoleculeSearchWindow(ref Pose windowPose, ref string moleculeSearchTxt)
         {
+            Keyboard.HandleKeyboard(ref moleculeSearchTxt);
             UI.WindowBegin("Molecule search", ref windowPose, new Vec2(40, 0) * U.cm, UIWin.Normal);
             //UI.PushTextStyle(_normalUiTextStyle);
             UI.Label("Name:");
             UI.Input("inpMolecule", ref moleculeSearchTxt, new Vec2(20, 0) * U.cm);
             UI.SameLine();
-            UI.ButtonRound("btnKey", keyboardSprite);
-            UI.Button("⌨️", new Vec2(5, 0) * U.cm);
+            //UI.ButtonRound("btnKey", keyboardSprite);
+            if(UI.Button("⌨️", new Vec2(5, 0) * U.cm))
+            {
+                Keyboard.ToogleKeyboard();
+            }
             var inputBounds = UI.LayoutLast;
             var btnPressed = false;
             if (UI.Button("Search") && !string.IsNullOrEmpty(moleculeSearchTxt))

@@ -22,5 +22,11 @@
 			<Link>Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
 		</Content>
 	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="C:\workspace\Molecule-Browser\Assets\keyboard-outline.png" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="C:\workspace\Molecule-Browser\Assets\keyboard-outline.png" />
+	</ItemGroup>
 
 </Project>
