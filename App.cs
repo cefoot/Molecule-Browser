@@ -17,6 +17,7 @@ namespace Molecula
         };
 
         Pose cubePose = new Pose(0, 0, -0.5f, Quat.Identity);
+        Pose cubePose1 = new Pose(0.5f, 0, -0.5f, Quat.Identity);
         Model cube;
         Matrix4x4 floorTransform = Matrix.TS(new Vector3(0, -1.5f, 0), new Vector3(30, 0.1f, 30));
         private List<MoleculeData> _molecules = new List<MoleculeData>();
@@ -67,8 +68,10 @@ namespace Molecula
                 System.Diagnostics.Debug.WriteLine(e);
             }
 
-            UI.Handle("Cube", ref cubePose, cube.Bounds);
-            cube.Draw(cubePose.ToMatrix());
+            //UI.Handle("Cube", ref cubePose, cube.Bounds);
+            //UI.Handle("Cube1", ref cubePose1, cube.Bounds);
+            //cube.Draw(cubePose.ToMatrix());
+            //cube.Draw(cubePose1.ToMatrix());
         }
 
         private void MoleculeSearchWindow(ref Pose windowPose, ref string moleculeSearchTxt)
@@ -110,9 +113,10 @@ namespace Molecula
         {//https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/record/JSON/?record_type=3d
             try
             {
+                System.Diagnostics.Debug.WriteLine($"trying to load '{moleculeName}'[{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
                 var molecule = await MoleculeData.CreateMolecule(moleculeName);
                 _molecules.Add(molecule);
-                System.Diagnostics.Debug.WriteLine($"Molecule '{moleculeName}' loaded");
+                System.Diagnostics.Debug.WriteLine($"Molecule '{moleculeName}' loaded[{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             }
             catch (Exception e)
             {

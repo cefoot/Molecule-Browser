@@ -19,6 +19,7 @@ namespace molecula_shared
         public static float AtomDiameter = 0.05f;
 
         private static Dictionary<int, Material> _atomMaterialMap = new Dictionary<int, Material>();
+        private static Mesh _atomMesh;
         private const int BndClr = -1;
         private static TextStyle _errorTextStyl;
         private static TextStyle _activeTextStyl;
@@ -28,7 +29,7 @@ namespace molecula_shared
 
         static MoleculeData()
         {
-            var mat = Default.MaterialUI.Copy();
+            var mat = new Material(Shader.Default);
             mat.SetColor("color", Color.HSV(0f, 0f, 1f, 0.3f));
             mat.Transparency = Transparency.Blend;
             _atomMaterialMap[BndClr] = mat;
@@ -41,69 +42,95 @@ namespace molecula_shared
 
         public static async Task<MoleculeData> CreateMolecule(string moleculeName)
         {
+            if (_atomMesh == null)
+            {
+                _atomMesh = Mesh.GenerateSphere(AtomDiameter);
+            }
+            var mainThreadCtxt = new System.Threading.SynchronizationContext();
+            System.Diagnostics.Debug.WriteLine($"loading molecule data from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             var recData = await PubChemUtils.GetData<RecordData>($"name/{moleculeName}/record/JSON/?record_type=3d");
             if (recData == null || recData.PC_Compounds == null)
             {
                 throw new System.ArgumentException($"no molecule found with name '{moleculeName}'");
             }
+            System.Diagnostics.Debug.WriteLine($"loading info from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             var moleculeInfoRequest = PubChemUtils.GetData<Root_InformationData>($"cid/{recData.PC_Compounds[0].id.id.cid}/description/JSON");
+            var molecule = await BuildMoleculeModel(mainThreadCtxt, recData, await moleculeInfoRequest);
+            return molecule;
+        }
 
-            var mdl = new Model();
-            var atoms = new List<AtomData>();
-            foreach (var atom in recData.PC_Compounds[0].AtomList)
+        private static async Task<MoleculeData> BuildMoleculeModel(System.Threading.SynchronizationContext mainThreadCtxt, RecordData recData, Root_InformationData moleculeInfoRequest)
+        {
+            var molecule = new MoleculeData();
+            mainThreadCtxt.Send(m =>
             {
-                if (!_atomMaterialMap.ContainsKey(atom.ElementOrderNumber))
+
+                var mdl = new Model();
+                var atoms = new List<AtomData>();
+                var idx = 1;
+                System.Diagnostics.Debug.WriteLine($"building model [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+                foreach (var atom in recData.PC_Compounds[0].AtomList)
                 {
-                    var mat = Default.Material.Copy();
-                    mat.SetColor("color", atom.GetColor());
-                    _atomMaterialMap[atom.ElementOrderNumber] = mat;
-                }
-                var atmPos = atom.Position * MoleculeScale;
-                atoms.Add(new AtomData
-                {
-                    Atom = atom.GetAtomInfo(),
-                    RelativePosition = atmPos
-                });
-                var atmMdl = mdl.AddNode(atom.GetName(), new Pose(atmPos, Quat.Identity).ToMatrix(), Mesh.GenerateSphere(AtomDiameter), _atomMaterialMap[atom.ElementOrderNumber]);
-                foreach (var bndData in atom.Bonds)
-                {
-                    var bndPos = bndData.Key.Position * MoleculeScale;
-                    var bndDir = bndPos - atmPos;
-                    var mddlPnt = atmPos + bndDir / 2f;
-                    var bndDirNorm = Vec3.Cross(bndDir, new Vec3(bndDir.z, bndDir.x, bndDir.y)).Normalized * AtomDiameter * .5f;
-                    for (int i = 0; i < bndData.Value; i++)
+                    if (!_atomMaterialMap.ContainsKey(atom.ElementOrderNumber))
                     {
-                        var tmpPnt = mddlPnt;
-                        if (bndData.Value > 1)
-                        {
-                            tmpPnt += bndDirNorm * i;
-                        }
-                        //Quat.FromAngles(0f, 0f, 360f / bndData.Value).
-                        mdl.AddNode(
-                            $"{atom.GetSymbol()}_{bndData.Key.GetSymbol()}",
-                            Matrix.TRS(
-                                tmpPnt,
-                                Quat.LookDir(bndDir),
-                                new Vec3(.1f, .1f, 1f)
-                                ),
-                            Mesh.GenerateSphere(Vec3.Distance(atom.Position * MoleculeScale, bndData.Key.Position * MoleculeScale)),
-                            _atomMaterialMap[BndClr]);
+                        System.Diagnostics.Debug.WriteLine($"creating material for '{atom.ElementOrderNumber}' [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+
+                        var mat = new Material(Shader.Default);
+                        mat.SetColor("color", atom.GetColor());
+                        _atomMaterialMap[atom.ElementOrderNumber] = mat;
                     }
+                    var atmPos = atom.Position * MoleculeScale;
+                    atoms.Add(new AtomData
+                    {
+                        Atom = atom.GetAtomInfo(),
+                        RelativePosition = atmPos
+                    });
+                    var atmMdl = mdl.AddNode($"{idx++}_{atom.GetName()}", new Pose(atmPos, Quat.Identity).ToMatrix(), _atomMesh, _atomMaterialMap[atom.ElementOrderNumber]);
+                    CreateBonds(mdl, atom, atmPos);
+                }
+                System.Diagnostics.Debug.WriteLine($"assembling modelinfo [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+
+                var pos = Input.Head.position + Input.Head.Forward;
+                ((MoleculeData)m).Model = mdl;
+                ((MoleculeData)m).Pose = new Pose(pos, Quat.LookAt(pos, Input.Head.position, Vec3.Up));
+                ((MoleculeData)m).Name = moleculeInfoRequest.InformationList.Information[0].Title;
+                ((MoleculeData)m).CID = moleculeInfoRequest.InformationList.Information[0].CID;
+                ((MoleculeData)m).RawData = recData.PC_Compounds[0];
+                ((MoleculeData)m).SingleElements = atoms;
+                ((MoleculeData)m).ID = Guid.NewGuid().ToString();
+            }, molecule);
+            return molecule;
+        }
+
+        private static void CreateBonds(Model mdl, SingleAtom atom, Vec3 atmPos)
+        {
+            foreach (var bndData in atom.Bonds)
+            {
+                var bndPos = bndData.Key.Position * MoleculeScale;
+                var bndDir = bndPos - atmPos;
+                var mddlPnt = atmPos + bndDir / 2f;
+                var bndDirNorm = Vec3.Cross(bndDir, new Vec3(bndDir.z, bndDir.x, bndDir.y)).Normalized * AtomDiameter * .5f;
+                for (var i = 0; i < bndData.Value; i++)
+                {
+                    var tmpPnt = mddlPnt;
+                    if (bndData.Value > 1)
+                    {
+                        tmpPnt += bndDirNorm * i;
+                    }
+                    //Quat.FromAngles(0f, 0f, 360f / bndData.Value).
+                    System.Diagnostics.Debug.WriteLine($"creating model node for bonding ({atom.GetSymbol()}-{bndData.Key.GetSymbol()})'{atom.ElementOrderNumber}' [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+
+                    mdl.AddNode(
+                        $"{atom.GetSymbol()}_{bndData.Key.GetSymbol()}_{Guid.NewGuid().ToString()}",
+                        Matrix.TRS(
+                            tmpPnt,
+                            Quat.LookDir(bndDir),
+                            new Vec3(.1f, .1f, 1f)
+                            ),
+                        _atomMesh/*Mesh.GenerateSphere(Vec3.Distance(atom.Position * MoleculeScale, bndData.Key.Position * MoleculeScale))*/,
+                        _atomMaterialMap[BndClr]);
                 }
             }
-            var res = await moleculeInfoRequest;
-            var pos = Input.Head.position + Input.Head.Forward;
-            var molecule = new MoleculeData
-            {
-                Model = mdl,
-                Pose = new Pose(pos, Quat.LookAt(pos, Input.Head.position, Vec3.Up)),
-                Name = res.InformationList.Information[0].Title,
-                CID = res.InformationList.Information[0].CID,
-                RawData = recData.PC_Compounds[0],
-                SingleElements = atoms,
-                ID = Guid.NewGuid().ToString()
-            };
-            return molecule;
         }
 
         public void Draw()
