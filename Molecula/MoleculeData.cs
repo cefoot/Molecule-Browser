@@ -109,7 +109,7 @@ namespace molecula_shared
                 var bndPos = bndData.Key.Position * MoleculeScale;
                 var bndDir = bndPos - atmPos;
                 var mddlPnt = atmPos + bndDir / 2f;
-                var bndDirNorm = Vec3.Cross(bndDir, new Vec3(bndDir.z, bndDir.x, bndDir.y)).Normalized * AtomDiameter * .5f;
+                var bndDirNorm = Vec3.Cross(bndDir, Input.Head.Forward).Normalized * AtomDiameter * .5f;
                 for (var i = 0; i < bndData.Value; i++)
                 {
                     var tmpPnt = mddlPnt;
