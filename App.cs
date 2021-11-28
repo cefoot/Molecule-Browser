@@ -51,11 +51,21 @@ namespace Molecula
         {
             if (SK.System.displayType == Display.Opaque)
                 Default.MeshCube.Draw(floorMaterial, floorTransform);
-            for (int i = 0; i < _molecules.Count; i++)
+            try
             {
-                _molecules[i].Draw();
+
+                for (int i = 0; i < _molecules.Count; i++)
+                {
+                    _molecules[i].Draw();
+                }
+                MoleculeSearchWindow(ref _windowPose, ref _moleculeSearchTxt);
             }
-            MoleculeSearchWindow(ref _windowPose, ref _moleculeSearchTxt);
+            catch (Exception e)
+            {
+                AddErrorMessage(e.Message);
+                System.Diagnostics.Debug.WriteLine(e.Message);
+                System.Diagnostics.Debug.WriteLine(e);
+            }
 
             UI.Handle("Cube", ref cubePose, cube.Bounds);
             cube.Draw(cubePose.ToMatrix());
