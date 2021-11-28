@@ -24,10 +24,12 @@ namespace Molecula
         Material floorMaterial;
         private Pose _windowPose;
         private string _moleculeSearchTxt;
+        Sprite keyboardSprite = Sprite.FromFile("keyboard-outline.png", SpriteType.Single);
         private StringBuilder _errorMsg = new StringBuilder();
         private DateTime _errorTime = DateTime.Now;
-        private TextStyle _errorUiTextStyl;
+        private TextStyle _errorUiTextStyle;
         private TextStyle _normalUiTextStyle;
+        public static System.Threading.SynchronizationContext MainThreadCtxt { get; private set; }
 
         public void Init()
         {
@@ -42,10 +44,16 @@ namespace Molecula
             _windowPose = new Pose(.4f, 0, -.5f, Quat.LookDir(Input.Head.Forward * -1));
             _moleculeSearchTxt = "";
 
-            _errorUiTextStyl = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(1f, 0f, 0f));
+            _errorUiTextStyle = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(1f, 0f, 0f));
             _normalUiTextStyle = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(1f, 1f, 1f));
 
+            MainThreadCtxt = new System.Threading.SynchronizationContext();
             //LoadMolecule("butin");
+        }
+
+        private void JustActiveHandler(InputSource arg1, BtnState arg2, Pointer arg3)
+        {
+            System.Diagnostics.Debug.WriteLine(arg1 + ":" + arg2);
         }
 
         public void Step()
@@ -76,29 +84,46 @@ namespace Molecula
 
         private void MoleculeSearchWindow(ref Pose windowPose, ref string moleculeSearchTxt)
         {
-            UI.WindowBegin("Molecule search", ref windowPose, new Vec2(25, 0) * U.cm, UIWin.Normal);
+            UI.WindowBegin("Molecule search", ref windowPose, new Vec2(40, 0) * U.cm, UIWin.Normal);
             //UI.PushTextStyle(_normalUiTextStyle);
             UI.Label("Name:");
+            UI.Input("inpMolecule", ref moleculeSearchTxt, new Vec2(20, 0) * U.cm);
             UI.SameLine();
-            UI.Input("inpMolecule", ref moleculeSearchTxt);//, new Vec2(10, 2) * U.mm);
+            UI.ButtonRound("btnKey", keyboardSprite);
+            UI.Button("⌨️", new Vec2(5, 0) * U.cm);
+            var inputBounds = UI.LayoutLast;
+            var btnPressed = false;
             if (UI.Button("Search") && !string.IsNullOrEmpty(moleculeSearchTxt))
             {
                 LoadMolecule(moleculeSearchTxt);
                 moleculeSearchTxt = "";
+                btnPressed = true;
             }
-            UI.SameLine();
             if (UI.Button("Fructose"))
             {
                 LoadMolecule("Fructose");
+                btnPressed = true;
             }
             UI.SameLine();
             if (UI.Button("butin"))
             {
                 LoadMolecule("butin");
+                btnPressed = true;
+            }
+            if (!btnPressed)
+            {
+                if (UI.IsInteracting(Handed.Left) && inputBounds.Contains(Input.Hand(Handed.Left)[FingerId.Index, JointId.Tip].position))
+                {
+                    moleculeSearchTxt = "left" + Guid.NewGuid().ToString();
+                }
+                if (UI.IsInteracting(Handed.Right) && inputBounds.Contains(Input.Hand(Handed.Right)[FingerId.Index, JointId.Tip].position))
+                {
+                    moleculeSearchTxt = "right" + Guid.NewGuid().ToString();
+                }
             }
             if ((DateTime.Now - _errorTime).TotalSeconds < 5d)
             {
-                UI.PushTextStyle(_errorUiTextStyl);
+                UI.PushTextStyle(_errorUiTextStyle);
                 UI.Text(_errorMsg.ToString());
                 UI.PopTextStyle();
             }

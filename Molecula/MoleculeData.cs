@@ -1,6 +1,9 @@
-﻿using StereoKit;
+﻿using Molecula;
+using Molecula.Molecula;
+using StereoKit;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace molecula_shared
@@ -12,7 +15,12 @@ namespace molecula_shared
         public string Name;
         public PCCompound RawData;
         public int CID;
+
+        public string Description { get; private set; } = "...Loading...";
+
         public List<AtomData> SingleElements;
+
+        public Property Props { get; private set; }
 
         public static float MoleculeScale = 0.1f;
 
@@ -26,6 +34,7 @@ namespace molecula_shared
         private static TextStyle _normalTextStyle;
 
         public string ID { get; private set; }
+        public MoleculeMenu MenuInfo { get; internal set; }
 
         static MoleculeData()
         {
@@ -40,65 +49,85 @@ namespace molecula_shared
             _normalTextStyle.Material.Transparency = Transparency.Blend;
         }
 
+        public async void LoadInfo_Async()
+        {
+            var moleculeProps = PubChemUtils.GetData<MoleculeProps>($"cid/{CID}/property/MolecularWeight,MolecularFormula/JSON");
+            var moleculeInfoRequest = PubChemUtils.GetData<Root_InformationData>($"cid/{CID}/description/JSON");
+
+            var info = await moleculeInfoRequest;
+            Name = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).First().Title;
+            Description = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Description)).First().Description;
+            Props = (await moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).First();
+        }
+
+
         public static async Task<MoleculeData> CreateMolecule(string moleculeName)
         {
             if (_atomMesh == null)
             {
                 _atomMesh = Mesh.GenerateSphere(AtomDiameter);
             }
-            var mainThreadCtxt = new System.Threading.SynchronizationContext();
             System.Diagnostics.Debug.WriteLine($"loading molecule data from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             var recData = await PubChemUtils.GetData<RecordData>($"name/{moleculeName}/record/JSON/?record_type=3d");
             if (recData == null || recData.PC_Compounds == null)
             {
-                throw new System.ArgumentException($"no molecule found with name '{moleculeName}'");
+                throw new ArgumentException($"no molecule found with name '{moleculeName}'");
             }
             System.Diagnostics.Debug.WriteLine($"loading info from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
-            var moleculeInfoRequest = PubChemUtils.GetData<Root_InformationData>($"cid/{recData.PC_Compounds[0].id.id.cid}/description/JSON");
-            var molecule = await BuildMoleculeModel(mainThreadCtxt, recData, await moleculeInfoRequest);
+            var molecule = await BuildMoleculeModel(recData);
+            molecule.Name = moleculeName;
+            molecule.LoadInfo_Async();
             return molecule;
         }
 
-        private static async Task<MoleculeData> BuildMoleculeModel(System.Threading.SynchronizationContext mainThreadCtxt, RecordData recData, Root_InformationData moleculeInfoRequest)
+        private static async Task<MoleculeData> BuildMoleculeModel(RecordData recData)
         {
             var molecule = new MoleculeData();
-            mainThreadCtxt.Send(m =>
+            Exception hadException = null;
+            App.MainThreadCtxt.Send(m =>
             {
-
-                var mdl = new Model();
-                var atoms = new List<AtomData>();
-                var idx = 1;
-                System.Diagnostics.Debug.WriteLine($"building model [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
-                foreach (var atom in recData.PC_Compounds[0].AtomList)
+                try
                 {
-                    if (!_atomMaterialMap.ContainsKey(atom.ElementOrderNumber))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"creating material for '{atom.ElementOrderNumber}' [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
 
-                        var mat = new Material(Shader.Default);
-                        mat.SetColor("color", atom.GetColor());
-                        _atomMaterialMap[atom.ElementOrderNumber] = mat;
+                    var mdl = new Model();
+                    var atoms = new List<AtomData>();
+                    var idx = 1;
+                    System.Diagnostics.Debug.WriteLine($"building model [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+                    foreach (var atom in recData.PC_Compounds[0].AtomList)
+                    {
+                        if (!_atomMaterialMap.ContainsKey(atom.ElementOrderNumber))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"creating material for '{atom.ElementOrderNumber}' [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+
+                            var mat = new Material(Shader.Default);
+                            mat.SetColor("color", atom.GetColor());
+                            _atomMaterialMap[atom.ElementOrderNumber] = mat;
+                        }
+                        var atmPos = atom.Position * MoleculeScale;
+                        atoms.Add(new AtomData
+                        {
+                            Atom = atom.GetAtomInfo(),
+                            RelativePosition = atmPos
+                        });
+                        var atmMdl = mdl.AddNode($"{idx++}_{atom.GetName()}", new Pose(atmPos, Quat.Identity).ToMatrix(), _atomMesh, _atomMaterialMap[atom.ElementOrderNumber]);
+                        CreateBonds(mdl, atom, atmPos);
                     }
-                    var atmPos = atom.Position * MoleculeScale;
-                    atoms.Add(new AtomData
-                    {
-                        Atom = atom.GetAtomInfo(),
-                        RelativePosition = atmPos
-                    });
-                    var atmMdl = mdl.AddNode($"{idx++}_{atom.GetName()}", new Pose(atmPos, Quat.Identity).ToMatrix(), _atomMesh, _atomMaterialMap[atom.ElementOrderNumber]);
-                    CreateBonds(mdl, atom, atmPos);
-                }
-                System.Diagnostics.Debug.WriteLine($"assembling modelinfo [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
+                    System.Diagnostics.Debug.WriteLine($"assembling modelinfo [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
 
-                var pos = Input.Head.position + Input.Head.Forward;
-                ((MoleculeData)m).Model = mdl;
-                ((MoleculeData)m).Pose = new Pose(pos, Quat.LookAt(pos, Input.Head.position, Vec3.Up));
-                ((MoleculeData)m).Name = moleculeInfoRequest.InformationList.Information[0].Title;
-                ((MoleculeData)m).CID = moleculeInfoRequest.InformationList.Information[0].CID;
-                ((MoleculeData)m).RawData = recData.PC_Compounds[0];
-                ((MoleculeData)m).SingleElements = atoms;
-                ((MoleculeData)m).ID = Guid.NewGuid().ToString();
+                    var pos = Input.Head.position + Input.Head.Forward;
+                    ((MoleculeData)m).Model = mdl;
+                    ((MoleculeData)m).Pose = new Pose(pos, Quat.LookAt(pos, Input.Head.position, Vec3.Up));
+                    ((MoleculeData)m).CID = recData.PC_Compounds[0].id.id.cid;
+                    ((MoleculeData)m).RawData = recData.PC_Compounds[0];
+                    ((MoleculeData)m).SingleElements = atoms;
+                    ((MoleculeData)m).ID = Guid.NewGuid().ToString();
+                }
+                catch (Exception e)
+                {
+                    hadException = e;
+                }
             }, molecule);
+            if (hadException != null) throw hadException;
             return molecule;
         }
 
@@ -146,6 +175,7 @@ namespace molecula_shared
             }
             else
             {
+                this.SelectMolecule();
                 Text.Add(Name, txtMatrix.ToMatrix(), _activeTextStyl, offY: 3f * U.cm, offZ: -5f * U.cm);
                 foreach (var elem in SingleElements)
                 {
@@ -154,6 +184,7 @@ namespace molecula_shared
                 }
 
             }
+            this.DrawMenu();
             //UI.HandleEnd();
         }
     }
