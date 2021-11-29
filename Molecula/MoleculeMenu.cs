@@ -49,7 +49,7 @@ namespace Molecula.Molecula
 
         public MoleculeMenu(MoleculeData moleculeInfo)
         {
-            _menuLoc = new Vec3(0f, -0.5f, -0.1f);
+            _menuLoc = new Vec3(0f, -0.2f, -0.1f);
             MoleculeInfo = moleculeInfo;
             MoleculeInfo.MenuInfo = this;
         }

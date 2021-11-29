@@ -22,9 +22,9 @@ namespace molecula_shared
 
         public Property Props { get; private set; }
 
-        public static float MoleculeScale = 0.1f;
+        public static float MoleculeScale = 0.05f;
 
-        public static float AtomDiameter = 0.05f;
+        public static float AtomDiameter = 0.03f;
 
         private static Dictionary<int, Material> _atomMaterialMap = new Dictionary<int, Material>();
         private static Mesh _atomMesh;
@@ -60,9 +60,9 @@ namespace molecula_shared
                 var moleculeInfoRequest = await PubChemUtils.GetData<Root_InformationData>($"cid/{CID}/description/JSON");
 
                 var info = moleculeInfoRequest;
-                Name = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).First().Title;
-                Description = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Description)).First().Description;
-                Props = (moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).First();
+                Name = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).FirstOrDefault()?.Title;
+                Description = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Description)).FirstOrDefault()?.Description;
+                Props = (moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).FirstOrDefault();
             }
             catch (Exception e)
             {
