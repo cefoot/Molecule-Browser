@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Molecula</AssemblyName>
   </PropertyGroup>
 
   <!-- Hide platform project folders from the solution explorer -->
