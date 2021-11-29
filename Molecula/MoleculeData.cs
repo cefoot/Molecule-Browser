@@ -32,6 +32,8 @@ namespace molecula_shared
         private static TextStyle _errorTextStyl;
         private static TextStyle _activeTextStyl;
         private static TextStyle _normalTextStyle;
+        private const string PRE_STRING_CID = "cid";
+        private const string PRE_STRING_NAME = "name";
 
         public string ID { get; private set; }
         public MoleculeMenu MenuInfo { get; internal set; }
@@ -42,33 +44,41 @@ namespace molecula_shared
             mat.SetColor("color", Color.HSV(0f, 0f, 1f, 0.3f));
             mat.Transparency = Transparency.Blend;
             _atomMaterialMap[BndClr] = mat;
-            _errorTextStyl = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(1f, 0f, 0f));
-            _activeTextStyl = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(0f, 1f, 0f, 0.7f));
+            var fnt = Font.FromFile(@"c:\work\Roboto\Roboto-Regular.ttf") ?? Font.Default;
+            _errorTextStyl = Text.MakeStyle(fnt, 2f * U.cm, new Color(1f, 0f, 0f));
+            _activeTextStyl = Text.MakeStyle(fnt, 2f * U.cm, new Color(0f, 1f, 0f, 0.7f));
             _activeTextStyl.Material.Transparency = Transparency.Blend;
-            _normalTextStyle = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(1f, 1f, 1f, 0.5f));
+            _normalTextStyle = Text.MakeStyle(fnt, 2f * U.cm, new Color(1f, 1f, 1f, 0.5f));
             _normalTextStyle.Material.Transparency = Transparency.Blend;
         }
 
-        public async void LoadInfo_Async()
+        public async void LoadInfo_Async(App caller)
         {
-            var moleculeProps = await PubChemUtils.GetData<MoleculeProps>($"cid/{CID}/property/MolecularWeight,MolecularFormula/JSON");
-            var moleculeInfoRequest = await PubChemUtils.GetData<Root_InformationData>($"cid/{CID}/description/JSON");
+            try
+            {
+                var moleculeProps = await PubChemUtils.GetData<MoleculeProps>($"cid/{CID}/property/MolecularWeight,MolecularFormula/JSON");
+                var moleculeInfoRequest = await PubChemUtils.GetData<Root_InformationData>($"cid/{CID}/description/JSON");
 
-            var info =  moleculeInfoRequest;
-            Name = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).First().Title;
-            Description = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Description)).First().Description;
-            Props = ( moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).First();
+                var info = moleculeInfoRequest;
+                Name = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).First().Title;
+                Description = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Description)).First().Description;
+                Props = (moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).First();
+            }
+            catch (Exception e)
+            {
+                caller.AddErrorMessage(e.Message);
+            }
         }
 
 
-        public static async Task<MoleculeData> CreateMolecule(string moleculeName)
+        public static async Task<MoleculeData> CreateMolecule(string moleculeName, App caller, bool isCid = false)
         {
             if (_atomMesh == null)
             {
                 _atomMesh = Mesh.GenerateSphere(AtomDiameter);
             }
             System.Diagnostics.Debug.WriteLine($"loading molecule data from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
-            var recData = await PubChemUtils.GetData<RecordData>($"name/{moleculeName}/record/JSON/?record_type=3d");
+            var recData = await PubChemUtils.GetData<RecordData>((isCid ? PRE_STRING_CID : PRE_STRING_NAME) + $"/{moleculeName}/record/JSON/?record_type=3d");
             if (recData == null || recData.PC_Compounds == null)
             {
                 throw new ArgumentException($"no molecule found with name '{moleculeName}'");
@@ -76,7 +86,7 @@ namespace molecula_shared
             System.Diagnostics.Debug.WriteLine($"loading info from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             var molecule = await BuildMoleculeModel(recData);
             molecule.Name = moleculeName;
-            molecule.LoadInfo_Async();
+            molecule.LoadInfo_Async(caller);
             return molecule;
         }
 
@@ -162,7 +172,7 @@ namespace molecula_shared
             }
         }
 
-        public void Draw()
+        public void Draw(App caller)
         {
             var isMoving = UI.Handle(ID, ref Pose, Model.Bounds);
             Model.Draw(Pose.ToMatrix());
@@ -171,20 +181,23 @@ namespace molecula_shared
             var txtMatrix = new Pose(Pose.position, Quat.LookAt(Pose.position, Input.Head.position));
             if (!isMoving)
             {
-                Text.Add(Name, txtMatrix.ToMatrix(), _normalTextStyle, offY: 3f * U.cm, offZ: -5f * U.cm);
+                //Text.Add(Name, txtMatrix.ToMatrix(), _normalTextStyle, offY: 3f * U.cm, offZ: -5f * U.cm);
+                Text.Add(Name, txtMatrix.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
             }
             else
             {
                 this.SelectMolecule();
-                Text.Add(Name, txtMatrix.ToMatrix(), _activeTextStyl, offY: 3f * U.cm, offZ: -5f * U.cm);
+                //Text.Add(Name, txtMatrix.ToMatrix(), _activeTextStyl, offY: 3f * U.cm, offZ: -5f * U.cm);
+                Text.Add(Name, txtMatrix.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
                 foreach (var elem in SingleElements)
                 {
                     var atomPos = Pose.orientation * elem.RelativePosition;
-                    Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), _activeTextStyl, offY: 0f * U.cm, offZ: -5f * U.cm);
+                    //Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), _activeTextStyl, offY: 0f * U.cm, offZ: -5f * U.cm);
+                    Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), offY: 0f * U.cm, offZ: -5f * U.cm);
                 }
 
             }
-            this.DrawMenu();
+            this.DrawMenu(caller);
             //UI.HandleEnd();
         }
     }

@@ -7,8 +7,8 @@
     <ProjectGuid>{4F693D80-51B1-48F6-9752-509D8E2EDD97}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StereoKit_UWP</RootNamespace>
-    <AssemblyName>StereoKit_UWP</AssemblyName>
+    <RootNamespace>Molecula_UWP</RootNamespace>
+    <AssemblyName>Molecula</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>

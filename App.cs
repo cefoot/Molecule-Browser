@@ -29,6 +29,8 @@ namespace Molecula
         private DateTime _errorTime = DateTime.Now;
         private TextStyle _errorUiTextStyle;
         private TextStyle _normalUiTextStyle;
+        private bool _playErrorSound = false;
+
         public static System.Threading.SynchronizationContext MainThreadCtxt { get; private set; }
 
         public void Init()
@@ -67,7 +69,7 @@ namespace Molecula
 
                 for (int i = 0; i < _molecules.Count; i++)
                 {
-                    _molecules[i].Draw();
+                    _molecules[i].Draw(this);
                 }
                 MoleculeSearchWindow(ref _windowPose, ref _moleculeSearchTxt);
             }
@@ -93,7 +95,7 @@ namespace Molecula
             UI.Input("inpMolecule", ref moleculeSearchTxt, new Vec2(20, 0) * U.cm);
             UI.SameLine();
             //UI.ButtonRound("btnKey", keyboardSprite);
-            if(UI.Button("⌨️", new Vec2(5, 0) * U.cm))
+            if (UI.Button("⌨️", new Vec2(5, 0) * U.cm))
             {
                 Keyboard.ToogleKeyboard();
             }
@@ -111,7 +113,7 @@ namespace Molecula
                 btnPressed = true;
             }
             UI.SameLine();
-            if (UI.Button("butin"))
+            if (UI.Button("Butin"))
             {
                 LoadMolecule("butin");
                 btnPressed = true;
@@ -129,6 +131,11 @@ namespace Molecula
             }
             if ((DateTime.Now - _errorTime).TotalSeconds < 5d)
             {
+                if (_playErrorSound)
+                {
+                    _playErrorSound = false;
+                    Sound.Click.Play(windowPose.position);
+                }
                 UI.PushTextStyle(_errorUiTextStyle);
                 UI.Text(_errorMsg.ToString());
                 UI.PopTextStyle();
@@ -140,12 +147,12 @@ namespace Molecula
             UI.WindowEnd();
         }
 
-        public async /*Task<Model>*/ void LoadMolecule(string moleculeName)
+        public async /*Task<Model>*/ void LoadMolecule(string moleculeName, bool isCid = false)
         {//https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/record/JSON/?record_type=3d
             try
             {
                 System.Diagnostics.Debug.WriteLine($"trying to load '{moleculeName}'[{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
-                var molecule = await MoleculeData.CreateMolecule(moleculeName);
+                var molecule = await MoleculeData.CreateMolecule(moleculeName, this, isCid);
                 _molecules.Add(molecule);
                 System.Diagnostics.Debug.WriteLine($"Molecule '{moleculeName}' loaded[{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             }
@@ -155,8 +162,9 @@ namespace Molecula
             }
         }
 
-        private void AddErrorMessage(string msg)
+        public void AddErrorMessage(string msg)
         {
+            _playErrorSound = true;
             _errorTime = DateTime.Now;
             _errorMsg.AppendLine(msg);
         }

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Molecula</AssemblyName>
+    <AssemblyName>Molecula-shared</AssemblyName>
   </PropertyGroup>
 
   <!-- Hide platform project folders from the solution explorer -->
@@ -10,6 +10,12 @@
     <Compile Remove="Platforms\**" />
     <EmbeddedResource Remove="Platforms\**" />
     <None Remove="Platforms\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\Roboto-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Roboto-Regular.ttf" />
   </ItemGroup>
 
   <ItemGroup>

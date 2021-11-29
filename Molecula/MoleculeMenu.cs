@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using molecula_shared;
 using StereoKit;
@@ -16,7 +17,7 @@ namespace Molecula.Molecula
             _curMoleculeData = molecule;
         }
 
-        public static void DrawMenu(this MoleculeData molecule)
+        public static void DrawMenu(this MoleculeData molecule, App caller)
         {
             if (molecule != _curMoleculeData)
             {//only draw for selected menu
@@ -33,7 +34,7 @@ namespace Molecula.Molecula
                     _curMenu = new MoleculeMenu(_curMoleculeData);
                 }
             }
-            _curMenu.Draw();
+            _curMenu.Draw(caller);
         }
 
 
@@ -43,26 +44,74 @@ namespace Molecula.Molecula
     {
         public MoleculeData MoleculeInfo;
 
-        public Pose _menuPose;
+        public Vec3 _menuLoc;
+        private List<KeyValuePair<int, string>> _similarMolecules;
 
         public MoleculeMenu(MoleculeData moleculeInfo)
         {
-            _menuPose = new Pose(new Vec3(0f, -0.5f, -0.1f), Quat.Identity);
+            _menuLoc = new Vec3(0f, -0.5f, -0.1f);
             MoleculeInfo = moleculeInfo;
             MoleculeInfo.MenuInfo = this;
         }
 
-        public void Draw()
+        public void Draw(App caller)
         {
-            Hierarchy.Push(MoleculeInfo.Pose.ToMatrix());
-            UI.WindowBegin(MoleculeInfo.Name, ref _menuPose, new Vec2(25, 0) * U.cm, UIWin.Normal);
+            Hierarchy.Push(Matrix.T(MoleculeInfo.Pose.position));
+            var menuPose = new Pose(_menuLoc, Quat.LookAt(MoleculeInfo.Pose.position + _menuLoc, Input.Head.position));
+            UI.WindowBegin(MoleculeInfo.Name, ref menuPose, new Vec2(25, 0) * U.cm, UIWin.Normal, UIMove.PosOnly);
             UI.Label("Formula:");
             UI.Text(MoleculeInfo.Props?.MolecularFormula);
             UI.Label("Description:");
             UI.Text(MoleculeInfo.Description);
-            //UI.PushTextStyle(_normalUiTextStyle);
+            UI.Label("Options");
+            if (_similarMolecules == null)
+            {
+                if (UI.Button("Find similar"))
+                {
+                    FindSimilar(caller);
+                }
+            }
+            else
+            {
+                if (_similarMolecules.Count < 1)
+                {
+                    UI.Label("..Loading similar..");
+                }
+                foreach (var similarMolecule in _similarMolecules)
+                {
+                    if (UI.Button(similarMolecule.Value))
+                    {
+                        caller.LoadMolecule(similarMolecule.Key.ToString(), true);
+                    }
+                }
+            }
             UI.WindowEnd();
+            _menuLoc = menuPose.position;
             Hierarchy.Pop();
+        }
+
+        private async void FindSimilar(App caller)
+        {
+            _similarMolecules = new List<KeyValuePair<int, string>>();
+            try
+            {
+
+                var res = await PubChemUtils.GetData<CIDIdentifierList>($"fastsimilarity_3d/cid/{MoleculeInfo.CID}/cids/JSON");
+                var cids = res.IdentifierList.CID.Take(3).AsParallel();
+                foreach (var cid in cids)
+                {
+                    var info = await PubChemUtils.GetData<Root_InformationData>($"cid/{cid}/description/JSON");
+                    _similarMolecules.Add(
+                        new KeyValuePair<int, string>(cid,
+                        info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).First().Title)
+                        );
+                }
+            }
+            catch (Exception e)
+            {
+                _similarMolecules = null;
+                caller.AddErrorMessage(e.Message);
+            }
         }
     }
 }

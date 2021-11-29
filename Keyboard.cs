@@ -8,7 +8,7 @@ namespace Molecula
     public static class Keyboard
     {
         private static bool _isShown = false;
-        private static Vec3 _keyboardPos = new Vec3(0f, -0.3f, -0.3f);
+        private static Vec3 _keyboardPos = new Vec3(0f, -0.3f, -0.6f);
         private static TextStyle _textStyle = Text.MakeStyle(Font.Default, 0.8f * U.cm, new Color(1f, 1f, 1f));
 
         public static void ToogleKeyboard()
