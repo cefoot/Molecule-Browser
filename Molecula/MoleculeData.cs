@@ -51,13 +51,13 @@ namespace molecula_shared
 
         public async void LoadInfo_Async()
         {
-            var moleculeProps = PubChemUtils.GetData<MoleculeProps>($"cid/{CID}/property/MolecularWeight,MolecularFormula/JSON");
-            var moleculeInfoRequest = PubChemUtils.GetData<Root_InformationData>($"cid/{CID}/description/JSON");
+            var moleculeProps = await PubChemUtils.GetData<MoleculeProps>($"cid/{CID}/property/MolecularWeight,MolecularFormula/JSON");
+            var moleculeInfoRequest = await PubChemUtils.GetData<Root_InformationData>($"cid/{CID}/description/JSON");
 
-            var info = await moleculeInfoRequest;
+            var info =  moleculeInfoRequest;
             Name = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Title)).First().Title;
             Description = info.InformationList.Information.Where(i => !string.IsNullOrEmpty(i.Description)).First().Description;
-            Props = (await moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).First();
+            Props = ( moleculeProps).PropertyTable?.Properties.Where(p => !string.IsNullOrEmpty(p.MolecularFormula)).First();
         }
 
 
