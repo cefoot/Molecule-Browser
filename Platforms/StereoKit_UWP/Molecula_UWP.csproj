@@ -82,14 +82,45 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Logo\molecule.png" />
     <Content Include="Logo\Logo-150.png" />
+    <Content Include="Logo\Logo-150.scale-100.png" />
+    <Content Include="Logo\Logo-150.scale-200.png" />
+    <Content Include="Logo\Logo-150.scale-400.png" />
     <Content Include="Logo\Logo-16.png" />
     <Content Include="Logo\Logo-310.png" />
+    <Content Include="Logo\Logo-310.scale-100.png" />
+    <Content Include="Logo\Logo-310.scale-200.png" />
+    <Content Include="Logo\Logo-310.scale-400.png" />
+    <Content Include="Logo\Logo-44.altform-lightunplated_targetsize-16.png" />
+    <Content Include="Logo\Logo-44.altform-lightunplated_targetsize-256.png" />
+    <Content Include="Logo\Logo-44.altform-lightunplated_targetsize-48.png" />
+    <Content Include="Logo\Logo-44.altform-unplated_targetsize-16.png" />
+    <Content Include="Logo\Logo-44.altform-unplated_targetsize-256.png" />
+    <Content Include="Logo\Logo-44.altform-unplated_targetsize-48.png" />
     <Content Include="Logo\Logo-44.png" />
+    <Content Include="Logo\Logo-44.scale-100.png" />
+    <Content Include="Logo\Logo-44.scale-200.png" />
+    <Content Include="Logo\Logo-44.scale-400.png" />
+    <Content Include="Logo\Logo-44.targetsize-16.png" />
+    <Content Include="Logo\Logo-44.targetsize-256.png" />
+    <Content Include="Logo\Logo-44.targetsize-48.png" />
     <Content Include="Logo\Logo-50.png" />
+    <Content Include="Logo\Logo-50.scale-100.png" />
+    <Content Include="Logo\Logo-50.scale-200.png" />
+    <Content Include="Logo\Logo-50.scale-400.png" />
     <Content Include="Logo\Logo-71.png" />
+    <Content Include="Logo\Logo-71.scale-100.png" />
+    <Content Include="Logo\Logo-71.scale-200.png" />
+    <Content Include="Logo\Logo-71.scale-400.png" />
     <Content Include="Logo\Logo-Wide150.png" />
+    <Content Include="Logo\Logo-Wide150.scale-100.png" />
+    <Content Include="Logo\Logo-Wide150.scale-200.png" />
+    <Content Include="Logo\Logo-Wide150.scale-400.png" />
     <Content Include="Logo\Logo-Wide300.png" />
+    <Content Include="Logo\Logo-Wide300.scale-100.png" />
+    <Content Include="Logo\Logo-Wide300.scale-200.png" />
+    <Content Include="Logo\Logo-Wide300.scale-400.png" />
     <Content Include="Properties\Default.rd.xml" />
   </ItemGroup>
   <!-- Copy assets, and build the app's shaders into the final app folder -->
