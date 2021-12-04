@@ -24,7 +24,8 @@ namespace Molecula
         Material floorMaterial;
         private Pose _windowPose;
         private string _moleculeSearchTxt;
-        Sprite keyboardSprite = Sprite.FromFile("keyboard-outline.png", SpriteType.Single);
+        private Sprite _keyboardSprite;
+        private Sprite _pubchemLogo;
         private StringBuilder _errorMsg = new StringBuilder();
         private DateTime _errorTime = DateTime.Now;
         private TextStyle _errorUiTextStyle;
@@ -35,6 +36,9 @@ namespace Molecula
 
         public void Init()
         {
+
+            _keyboardSprite = Sprite.FromFile("keyboard-outline.png", SpriteType.Single);
+            _pubchemLogo = Sprite.FromFile("pubchem_logo.png", SpriteType.Single);
             // Create assets used by the app
             cube = Model.FromMesh(
                 Mesh.GenerateRoundedCube(Vec3.One * 0.1f, 0.02f),
@@ -95,18 +99,20 @@ namespace Molecula
             UI.Input("inpMolecule", ref moleculeSearchTxt, new Vec2(20, 0) * U.cm);
             UI.SameLine();
             //UI.ButtonRound("btnKey", keyboardSprite);
-            if (UI.Button("⌨️", new Vec2(5, 0) * U.cm))
+            if (UI.ButtonRound("keyboard", _keyboardSprite)/*UI.Button("⌨️", new Vec2(5, 0) * U.cm)*/)
             {
                 Keyboard.ToogleKeyboard();
             }
             var inputBounds = UI.LayoutLast;
             var btnPressed = false;
+            UI.SameLine();
             if (UI.Button("Search") && !string.IsNullOrEmpty(moleculeSearchTxt))
             {
                 LoadMolecule(moleculeSearchTxt);
                 moleculeSearchTxt = "";
                 btnPressed = true;
             }
+            UI.Label("Samples:");
             if (UI.Button("Fructose"))
             {
                 LoadMolecule("Fructose");
@@ -144,6 +150,11 @@ namespace Molecula
             {
                 _errorMsg.Clear();
             }
+            UI.Label("powered by:");
+            UI.SameLine();
+            var imgWidth = 20F;
+            var imgAspect = 3.214765100671141F;
+            UI.Image(_pubchemLogo, new Vec2(imgWidth, imgWidth / imgAspect) * U.cm);
             UI.WindowEnd();
         }
 
