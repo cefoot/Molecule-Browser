@@ -1,11 +1,11 @@
 ## Hackathon entry:
-This project is/was an entry for the "Mixed Reality Challange: StereoKit" (devpost)[https://mixed-reality-stereokit.devpost.com/]
+This project is/was an entry for the "Mixed Reality Challange: StereoKit" [devpost](https://mixed-reality-stereokit.devpost.com/)
 
 ## Inspiration
 The Inspiration for this project came to me in the form of a wish. A colleague from my wife (both work in a chemistry lab) knows that I work with "these strange Headsets". So he let me know he would love to see and explore molecules in 3d. I thought this would be a nice use-case and this hackathon finally "gave me this last push" to start this project.
  
 ## What it does
-The App is a Mixed Reality User Interface for some functionally of the API from [PubChem](https://pubchem.ncbi.nlm.nih.gov/) [API-Doku](https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest).
+The App is a Mixed Reality User Interface for some functionally of the API from [PubChem](https://pubchem.ncbi.nlm.nih.gov/) ([API-Doku](https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest)).
 The App allows to search for molecules and displays the calculated 3d structure of the found molecule. Also, it shows a provided description, the full name and lets the user search for structurally similar molecules. 
 Because the user can move all the molecules around it is easy to "overlay" molecules and look for differences.
 
