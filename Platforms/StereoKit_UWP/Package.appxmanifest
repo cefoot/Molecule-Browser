@@ -9,15 +9,15 @@
   IgnorableNamespaces="uap uap2 uap5 mp">
 
   <Identity
-    Name="Molecula"
-    Publisher="CN=cpapenfuss"
-    Version="1.0.0.0" />
+    Name="18346cefoot.Molecula"
+    Publisher="CN=EE097064-D816-42B3-B1C9-FD35A1902DD5"
+    Version="1.0.3.0" />
 
-  <mp:PhoneIdentity PhoneProductId="ef151567-d327-42a2-b342-86fb965765ac" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="653b11c8-1ee1-47a1-afea-9055faec9473" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Molecula</DisplayName>
-    <PublisherDisplayName>Chris</PublisherDisplayName>
+    <PublisherDisplayName>cefoot</PublisherDisplayName>
     <Logo>Logo\Logo-50.png</Logo>
   </Properties>
 
