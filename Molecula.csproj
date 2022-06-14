@@ -7,8 +7,20 @@
 
   <!-- Hide platform project folders from the solution explorer -->
   <ItemGroup>
+    <Compile Remove="molecula-quest\**" />
+    <Compile Remove="molecula-shared\**" />
+    <Compile Remove="molecula-standalone\**" />
+    <Compile Remove="molecula-uwp\**" />
     <Compile Remove="Platforms\**" />
+    <EmbeddedResource Remove="molecula-quest\**" />
+    <EmbeddedResource Remove="molecula-shared\**" />
+    <EmbeddedResource Remove="molecula-standalone\**" />
+    <EmbeddedResource Remove="molecula-uwp\**" />
     <EmbeddedResource Remove="Platforms\**" />
+    <None Remove="molecula-quest\**" />
+    <None Remove="molecula-shared\**" />
+    <None Remove="molecula-standalone\**" />
+    <None Remove="molecula-uwp\**" />
     <None Remove="Platforms\**" />
   </ItemGroup>
   <ItemGroup>
@@ -25,7 +37,23 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RestSharp" Version="106.13.0" />
-    <PackageReference Include="StereoKit" Version="0.3.5-preview.2" />
+    <PackageReference Include="StereoKit" Version="0.3.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="molecula-shared\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="molecula-quest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="molecula-standalone\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="molecula-uwp\**" />
   </ItemGroup>
 
 </Project>

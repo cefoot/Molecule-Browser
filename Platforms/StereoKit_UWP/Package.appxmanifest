@@ -11,7 +11,7 @@
   <Identity
     Name="18346cefoot.Molecula"
     Publisher="CN=EE097064-D816-42B3-B1C9-FD35A1902DD5"
-    Version="1.0.3.0" />
+    Version="1.1.4.0" />
 
   <mp:PhoneIdentity PhoneProductId="653b11c8-1ee1-47a1-afea-9055faec9473" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
