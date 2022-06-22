@@ -22,7 +22,7 @@ namespace Molecula
             var keyboardPose = new Pose(_keyboardPos, Quat.LookAt(_keyboardPos, Input.Head.position, Vec3.Up));
             Hierarchy.Push(Matrix.T(Input.Head.position));
             UI.PushTextStyle(_textStyle);
-            UI.WindowBegin("Keyboard", ref keyboardPose, new Vec2(48, 0) * U.cm, UIWin.Normal);
+            UI.WindowBegin("Keyboard", ref keyboardPose, new Vec2(50, 0) * U.cm, UIWin.Normal);
             CreateKeyBtnLine("QWERTZUIOP", ref inputTxt);
             CreateKeyBtnLine("ASDFGHJKL", ref inputTxt);
             UI.SameLine();
