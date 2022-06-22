@@ -142,27 +142,28 @@ namespace molecula_shared
                 atomList[currentAid].Position = new Vec3(
                     x: (float)coords[0].conformers[0].x[coordIdx],
                     y: (float)coords[0].conformers[0].y[coordIdx],
-                    z: (float)coords[0].conformers[0].z[coordIdx]
+                    z: coords[0].conformers[0].z == null ? 0f : (float)coords[0].conformers[0].z[coordIdx]
                     );
 
             }
             idx = 0;
-            foreach (var aid in bonds.aid1)
-            {
-                for (int i = 0; i < bonds.order[idx]; i++)
+            if (bonds != null)
+                foreach (var aid in bonds.aid1)
                 {
-                    var other = atomList[bonds.aid2[idx]];
-                    if (atomList[aid].Bonds.ContainsKey(other))
+                    for (int i = 0; i < bonds.order[idx]; i++)
                     {
-                        atomList[aid].Bonds[other]++;
+                        var other = atomList[bonds.aid2[idx]];
+                        if (atomList[aid].Bonds.ContainsKey(other))
+                        {
+                            atomList[aid].Bonds[other]++;
+                        }
+                        else
+                        {
+                            atomList[aid].Bonds[other] = 1;
+                        }
                     }
-                    else
-                    {
-                        atomList[aid].Bonds[other] = 1;
-                    }
+                    idx++;
                 }
-                idx++;
-            }
             return atomList.Values.ToList();
         }
     }

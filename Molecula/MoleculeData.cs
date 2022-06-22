@@ -77,11 +77,23 @@ namespace molecula_shared
             {
                 _atomMesh = Mesh.GenerateSphere(AtomDiameter);
             }
+            var cid = moleculeName;
             System.Diagnostics.Debug.WriteLine($"loading molecule data from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
-            var recData = await PubChemUtils.GetData<RecordData>((isCid ? PRE_STRING_CID : PRE_STRING_NAME) + $"/{moleculeName}/record/JSON/?record_type=3d");
+            if (!isCid)
+            {
+                var cids = await PubChemUtils.GetData<CIDIdentifierList>($"name/{moleculeName}/cids/JSON");
+                cid = cids.IdentifierList.CID[0].ToString();
+            }
+            var recData = await PubChemUtils.GetData<RecordData>($"cid/{cid}/record/JSON/?record_type=3d");
             if (recData == null || recData.PC_Compounds == null)
             {
-                throw new ArgumentException($"no molecule found with name '{moleculeName}'");
+                //try 2d instead (will just be flat in 3d should be fine)
+                recData = await PubChemUtils.GetData<RecordData>($"cid/{cid}/record/JSON/?record_type=2d");
+
+                if (recData == null || recData.PC_Compounds == null)
+                {//well.. that did not work
+                    throw new ArgumentException($"no molecule found with name '{moleculeName}'");
+                }
             }
             System.Diagnostics.Debug.WriteLine($"loading info from pubchem [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
             var molecule = await BuildMoleculeModel(recData);
