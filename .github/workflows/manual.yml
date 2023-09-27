@@ -1,0 +1,31 @@
+name: Manual Tasks
+
+on: workflow_dispatch
+
+jobs:
+  manual:
+    runs-on: windows-latest
+
+    env:
+      SigningCertificate: StereoKit_UWP_TemporaryKey.pfx
+      Solution_Path: StereoKitTemplate.sln
+      UWP_Project_Path: .\Platforms\StereoKit_UWP\StereoKit_UWP.csproj
+      UWP_Project_Directory: .\Platforms\StereoKit_UWP\
+      UWP_Project_Name: StereoKit_UWP
+
+    steps:
+
+    - name: Configure Pagefile
+      uses: al-cheb/configure-pagefile-action@v1.3
+      with:
+        minimum-size: 32GB
+        maximum-size: 32GB
+        disk-root: "C:"
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        
+    - name: Build Standalone & Android Package
+      run: dotnet publish -h

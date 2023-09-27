@@ -17,7 +17,7 @@ namespace Molecula.Molecula
             _curMoleculeData = molecule;
         }
 
-        public static void DrawMenu(this MoleculeData molecule, App caller)
+        public static void DrawMenu(this MoleculeData molecule, StereoKitApp caller)
         {
             if (molecule != _curMoleculeData)
             {//only draw for selected menu
@@ -54,7 +54,7 @@ namespace Molecula.Molecula
             MoleculeInfo.MenuInfo = this;
         }
 
-        public void Draw(App caller)
+        public void Draw(StereoKitApp caller)
         {
             Hierarchy.Push(Matrix.T(MoleculeInfo.Pose.position));
             var menuPose = new Pose(_menuLoc, Quat.LookAt(MoleculeInfo.Pose.position + _menuLoc, Input.Head.position));
@@ -90,7 +90,7 @@ namespace Molecula.Molecula
             Hierarchy.Pop();
         }
 
-        private async void FindSimilar(App caller)
+        private async void FindSimilar(StereoKitApp caller)
         {
             _similarMolecules = new List<KeyValuePair<int, string>>();
             try

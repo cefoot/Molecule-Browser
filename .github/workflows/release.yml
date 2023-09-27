@@ -1,0 +1,111 @@
+name: Release builder
+
+on:
+  push:
+    tags: 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    env:
+      SigningCertificate: StereoKit_UWP_TemporaryKey.pfx
+      Solution_Path: Molecula.sln
+      UWP_Project_Path: .\Platforms\StereoKit_UWP\Molecula_UWP.csproj
+      UWP_Project_Directory: .\Platforms\StereoKit_UWP\
+      UWP_Project_Name: Molecula
+
+    steps:
+
+    - name: Configure Pagefile
+      uses: al-cheb/configure-pagefile-action@v1.3
+      with:
+        minimum-size: 32GB
+        maximum-size: 32GB
+        disk-root: "C:"
+    
+    - name: Get tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+
+    - name: Use tag
+      run: echo ${{steps.tag.outputs.tag}}
+
+    - name: Extract version from tag
+      uses: Amadevus/pwsh-script@v1
+      id: getVersion
+      with:
+        script: '("${{steps.tag.outputs.tag}}").Split("v")[1]'
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup Windows 10 SDK Action
+      # You may pin to the exact commit or the version.
+      # uses: GuillaumeFalourd/setup-windows10-sdk-action@c4ff86d0279a1eb5d2544913834db63bcfc018e1
+      uses: GuillaumeFalourd/setup-windows10-sdk-action@v1.11
+      with:
+        # SDK 5-digit version to install (e.g 17763, 18362, 19041)
+        sdk-version: 18362 # default is 18362
+
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.3.1
+
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content ".\$env:UWP_Project_Directory\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "${{steps.getVersion.outputs.result}}"
+        $manifest.save(".\$env:UWP_Project_Directory\Package.appxmanifest")
+        
+    - name: Decode the Pfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.CERT }}")
+        $currentDirectory = Get-Location
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath $env:UWP_Project_Directory -AdditionalChildPath $env:SigningCertificate
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        
+    - name: Build UWP Package
+      run: msbuild $env:UWP_Project_Path /p:Platform=ARM64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="ARM64" /p:AppxPackageDir=C:\DeployOutput /p:PackageCertificateKeyFile=$env:SigningCertificate /restore
+      env:
+        AppxBundle: Always
+        BuildMode: StoreUpload
+        Configuration: Release
+        
+    - name: Build Android Package
+      run: dotnet publish -c Release .\Projects\Android\SKTemplate_Multi_Android.csproj -o C:\DeployOutput\Android
+        
+    - name: Build Standalone Package
+      run: dotnet publish -c Release .\SKTemplate_Multi.csproj -o C:\DeployOutput\Win
+      
+    - name: List Output Files 
+      run: tree /F C:\DeployOutput\
+      
+    #- name: List Build Files 
+    #  run: tree /F
+
+    - name: Remove the .pfx
+      run: Remove-Item -path $env:UWP_Project_Directory/$env:SigningCertificate
+   
+    - name: Create archive UWP
+      run: Compress-Archive -Path C:\DeployOutput\${env:UWP_Project_Name}_${{steps.getVersion.outputs.result}}_Test\* -DestinationPath C:\DeployOutput\HoloLensPackage_${{steps.getVersion.outputs.result}}.zip
+   
+    - name: Create archive Android
+      run: Compress-Archive -Path C:\DeployOutput\Android\* -DestinationPath C:\DeployOutput\AndroidPackage_${{steps.getVersion.outputs.result}}.zip
+   
+    - name: Create archive Standalone
+      run: Compress-Archive -Path C:\DeployOutput\Win\* -DestinationPath C:\DeployOutput\StandalonePackage_${{steps.getVersion.outputs.result}}.zip
+      
+    #- name: List Output Files 
+    #  run: tree /F C:\DeployOutput\
+
+    - name: Release
+      id: upload-to-release
+      uses: softprops/action-gh-release@v0.1.15
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          C:/DeployOutput/HoloLensPackage_${{steps.getVersion.outputs.result}}.zip
+          C:/DeployOutput/AndroidPackage_${{steps.getVersion.outputs.result}}.zip
+          C:/DeployOutput/StandalonePackage_${{steps.getVersion.outputs.result}}.zip
