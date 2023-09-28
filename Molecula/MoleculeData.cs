@@ -52,7 +52,7 @@ namespace molecula_shared
             _normalTextStyle.Material.Transparency = Transparency.Blend;
         }
 
-        public async void LoadInfo_Async(App caller)
+        public async void LoadInfo_Async(StereoKitApp caller)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace molecula_shared
         }
 
 
-        public static async Task<MoleculeData> CreateMolecule(string moleculeName, App caller, bool isCid = false)
+        public static async Task<MoleculeData> CreateMolecule(string moleculeName, StereoKitApp caller, bool isCid = false)
         {
             if (_atomMesh == null)
             {
@@ -106,7 +106,7 @@ namespace molecula_shared
         {
             var molecule = new MoleculeData();
             Exception hadException = null;
-            App.MainThreadCtxt.Send(m =>
+            StereoKitApp.MainThreadCtxt.Send(m =>
             {
                 try
                 {
@@ -184,7 +184,7 @@ namespace molecula_shared
             }
         }
 
-        public void Draw(App caller)
+        public void Draw(StereoKitApp caller)
         {
             var isMoving = UI.Handle(ID, ref Pose, Model.Bounds);
             Model.Draw(Pose.ToMatrix());
