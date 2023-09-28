@@ -1,6 +1,6 @@
 ﻿using StereoKit;
 
-namespace Molecula;
+namespace Molecula{
 
 class Program
 {
@@ -15,4 +15,5 @@ class Program
 		// Core application loop
 		SK.Run(app.Step);
 	}
+}
 }
