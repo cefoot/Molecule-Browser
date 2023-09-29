@@ -13,7 +13,7 @@ jobs:
       Solution_Path: Molecula.sln
       UWP_Project_Path: .\Platforms\StereoKit_UWP\Molecula_UWP.csproj
       UWP_Project_Directory: .\Platforms\StereoKit_UWP\
-      UWP_Project_Name: Molecula
+      UWP_Project_Name: Molecula_UWP
 
     steps:
 
