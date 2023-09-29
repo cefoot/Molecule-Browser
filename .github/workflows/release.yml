@@ -77,7 +77,7 @@ jobs:
       run: dotnet publish -c Release .\Projects\Android\SKTemplate_Multi_Android.csproj -o C:\DeployOutput\Android
         
     - name: Build Standalone Package
-      run: dotnet publish -c Release .\SKTemplate_Multi.csproj -o C:\DeployOutput\Win
+      run: dotnet publish -c Release .\Molecula.csproj -o C:\DeployOutput\Win
       
     - name: List Output Files 
       run: tree /F C:\DeployOutput\
