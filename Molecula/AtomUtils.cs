@@ -165,9 +165,11 @@ namespace molecula_shared
             return _dicSymbolNameOrderNumber[orderNum].Name;
         }
 
-        public static Color GetColor(this SingleAtom atom)
+        public static Color GetColor(this SingleAtom atom, float alpha = 1f)
         {
-            return GetColor(atom.ElementOrderNumber);
+            var clr = GetColor(atom.ElementOrderNumber);
+            clr.a = alpha;
+            return clr;
         }
 
         public static Color GetColor(int orderNum)

@@ -44,13 +44,17 @@ namespace molecula_shared
             mat.SetColor("color", Color.HSV(0f, 0f, 1f, 0.3f));
             mat.Transparency = Transparency.Blend;
             _atomMaterialMap[BndClr] = mat;
-            var fnt = Font.FromFile(@"c:\work\Roboto\Roboto-Regular.ttf") ?? Font.Default;
+            var fnt = Font.FromFile(@"Assets/Roboto-Regular.ttf") ?? Font.Default;
             _errorTextStyl = Text.MakeStyle(fnt, 2f * U.cm, new Color(1f, 0f, 0f));
-            _activeTextStyl = Text.MakeStyle(fnt, 2f * U.cm, new Color(0f, 1f, 0f, 0.7f));
+            _activeTextStyl = Text.MakeStyle(fnt, 2f * U.cm, Color.Hex(0x96AC7EDD));
             _activeTextStyl.Material.Transparency = Transparency.Blend;
             _normalTextStyle = Text.MakeStyle(fnt, 2f * U.cm, new Color(1f, 1f, 1f, 0.5f));
             _normalTextStyle.Material.Transparency = Transparency.Blend;
         }
+
+        public TextStyle GetActiveTextStyle() => _activeTextStyl;
+        public TextStyle GetNormalTextStyle() => _normalTextStyle;
+        public TextStyle GetErrorTextStyle() => _errorTextStyl;
 
         public async void LoadInfo_Async(StereoKitApp caller)
         {
@@ -110,7 +114,6 @@ namespace molecula_shared
             {
                 try
                 {
-
                     var mdl = new Model();
                     var atoms = new List<AtomData>();
                     var idx = 1;
@@ -122,7 +125,8 @@ namespace molecula_shared
                             System.Diagnostics.Debug.WriteLine($"creating material for '{atom.ElementOrderNumber}' [{System.Threading.Thread.CurrentThread.ManagedThreadId}]");
 
                             var mat = new Material(Shader.Default);
-                            mat.SetColor("color", atom.GetColor());
+                            mat.SetColor("color", atom.GetColor(0.7f));
+                            mat.Transparency = Transparency.Blend;
                             _atomMaterialMap[atom.ElementOrderNumber] = mat;
                         }
                         var atmPos = atom.Position * MoleculeScale;
@@ -193,19 +197,19 @@ namespace molecula_shared
             var txtMatrix = new Pose(Pose.position, Quat.LookAt(Pose.position, Input.Head.position));
             if (!isMoving)
             {
-                //Text.Add(Name, txtMatrix.ToMatrix(), _normalTextStyle, offY: 3f * U.cm, offZ: -5f * U.cm);
-                Text.Add(Name, txtMatrix.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
+                Text.Add(Name, txtMatrix.ToMatrix(), _normalTextStyle, offY: 3f * U.cm, offZ: -5f * U.cm);
+                // Text.Add(Name, txtMatrix.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
             }
             else
             {
                 this.SelectMolecule();
-                //Text.Add(Name, txtMatrix.ToMatrix(), _activeTextStyl, offY: 3f * U.cm, offZ: -5f * U.cm);
-                Text.Add(Name, txtMatrix.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
+                Text.Add(Name, txtMatrix.ToMatrix(), _activeTextStyl, offY: 3f * U.cm, offZ: -5f * U.cm);
+                // Text.Add(Name, txtMatrix.ToMatrix(), offY: 3f * U.cm, offZ: -5f * U.cm);
                 foreach (var elem in SingleElements)
                 {
                     var atomPos = Pose.orientation * elem.RelativePosition;
-                    //Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), _activeTextStyl, offY: 0f * U.cm, offZ: -5f * U.cm);
-                    Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), offY: 0f * U.cm, offZ: -5f * U.cm);
+                    Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), _activeTextStyl, offY: 0f * U.cm, offZ: -5f * U.cm);
+                    // Text.Add(elem.Atom.Symbol, new Pose(Pose.position + atomPos, Quat.LookAt(Pose.position, Input.Head.position)).ToMatrix(), offY: 0f * U.cm, offZ: -5f * U.cm);
                 }
 
             }
