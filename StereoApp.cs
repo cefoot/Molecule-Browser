@@ -1,5 +1,6 @@
 ﻿using molecula_shared;
 using StereoKit;
+using StereoKit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -22,7 +23,8 @@ namespace Molecula
         Matrix4x4 floorTransform = Matrix.TS(new Vector3(0, -1.5f, 0), new Vector3(30, 0.1f, 30));
         private List<MoleculeData> _molecules = new List<MoleculeData>();
         Material floorMaterial;
-        private Pose _windowPose;
+        private Pose _windowPoseSearch;
+        private Pose _windowPoseSetting;
         private string _moleculeSearchTxt;
         private Sprite _keyboardSprite;
         private Sprite _pubchemLogo;
@@ -31,8 +33,15 @@ namespace Molecula
         private TextStyle _errorUiTextStyle;
         private TextStyle _normalUiTextStyle;
         private bool _playErrorSound = false;
+        private PassthroughMetaExt _passthrough;
+        private bool _showSettings = false;
 
         public static System.Threading.SynchronizationContext MainThreadCtxt { get; private set; }
+
+        public StereoKitApp(PassthroughMetaExt passthroughStepper)
+        {
+            _passthrough = passthroughStepper;
+        }
 
         public void Init()
         {
@@ -49,7 +58,8 @@ namespace Molecula
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
 
-            _windowPose = new Pose(.4f, 0, -.5f, Quat.LookDir(Input.Head.Forward * -1));
+            _windowPoseSearch = new Pose(.4f, 0, -.5f, Quat.LookDir(Input.Head.Forward * -1));
+            _windowPoseSetting = new Pose(-.4f, 0, -.5f, Quat.LookDir(Input.Head.Forward * -1));
             _moleculeSearchTxt = "";
 
             _errorUiTextStyle = Text.MakeStyle(Font.Default, 2f * U.cm, new Color(1f, 0f, 0f));
@@ -75,7 +85,7 @@ namespace Molecula
                 {
                     _molecules[i].Draw(this);
                 }
-                MoleculeSearchWindow(ref _windowPose, ref _moleculeSearchTxt);
+                MoleculeSearchWindow(ref _windowPoseSearch, ref _moleculeSearchTxt);
             }
             catch (Exception e)
             {
@@ -112,6 +122,7 @@ namespace Molecula
                 moleculeSearchTxt = "";
                 btnPressed = true;
             }
+            UI.Toggle("Settings", ref _showSettings);
             UI.Label("Samples:");
             if (UI.Button("Fructose"))
             {
@@ -155,6 +166,30 @@ namespace Molecula
             var imgWidth = 20F;
             var imgAspect = 3.214765100671141F;
             UI.Image(_pubchemLogo, new Vec2(imgWidth, imgWidth / imgAspect) * U.cm);
+            UI.WindowEnd();
+            if (_showSettings)
+            {
+                CreateSettingsWindow();
+            }
+        }
+
+        private void CreateSettingsWindow()
+        {
+
+            UI.WindowBegin("Settings", ref _windowPoseSetting);
+            if (_passthrough.Available)
+            {
+                var shouldEnable = _passthrough.Enabled;
+                UI.Toggle("Passthrough", ref shouldEnable);
+                _passthrough.Enabled = shouldEnable;
+            }
+
+            var activeTxtClr = MoleculeData.GetActiveTextStyle().Material.GetColor("color");
+            var activeAlpha = activeTxtClr.a;
+            UI.Label("Active Text Alpha");
+            UI.HSlider("Active", ref activeAlpha, 0f, 1f);
+            activeTxtClr.a = activeAlpha;
+            MoleculeData.GetActiveTextStyle().Material.SetColor("color",activeTxtClr);
             UI.WindowEnd();
         }
 
