@@ -83,6 +83,7 @@
     <Compile Include="..\..\Keyboard.cs" />
     <Compile Include="..\..\Molecula\*.cs" />
     <Compile Include="..\..\StereoApp.cs" />
+    <Compile Include="..\..\Tools\*.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
