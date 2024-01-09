@@ -183,6 +183,13 @@ namespace Molecula
                 UI.Toggle("Passthrough", ref shouldEnable);
                 _passthrough.Enabled = shouldEnable;
             }
+
+            var activeTxtClr = MoleculeData.GetActiveTextStyle().Material.GetColor("color");
+            var activeAlpha = activeTxtClr.a;
+            UI.Label("Active Text Alpha");
+            UI.HSlider("Active", ref activeAlpha, 0f, 1f);
+            activeTxtClr.a = activeAlpha;
+            MoleculeData.GetActiveTextStyle().Material.SetColor("color",activeTxtClr);
             UI.WindowEnd();
         }
 

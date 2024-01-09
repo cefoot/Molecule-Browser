@@ -52,9 +52,9 @@ namespace molecula_shared
             _normalTextStyle.Material.Transparency = Transparency.Blend;
         }
 
-        public TextStyle GetActiveTextStyle() => _activeTextStyl;
-        public TextStyle GetNormalTextStyle() => _normalTextStyle;
-        public TextStyle GetErrorTextStyle() => _errorTextStyl;
+        public static TextStyle GetActiveTextStyle() => _activeTextStyl;
+        public static TextStyle GetNormalTextStyle() => _normalTextStyle;
+        public static TextStyle GetErrorTextStyle() => _errorTextStyl;
 
         public async void LoadInfo_Async(StereoKitApp caller)
         {
