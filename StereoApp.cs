@@ -14,7 +14,8 @@ namespace Molecula
         {
             appName = "Molecula",
             assetsFolder = "Assets",
-            displayPreference = DisplayMode.MixedReality
+            displayPreference = DisplayMode.MixedReality,
+            blendPreference = DisplayBlend.AnyTransparent
         };
 
         Pose cubePose = new Pose(0, 0, -0.5f, Quat.Identity);
@@ -76,8 +77,17 @@ namespace Molecula
 
         public void Step()
         {
-            if (SK.System.displayType == Display.Opaque)
+
+            if (SK.System.displayType == Display.Opaque && !StereoKit.Device.Name.Contains("Monado"))
+            {
+
                 Default.MeshCube.Draw(floorMaterial, floorTransform);
+            }
+            else
+            {
+                Renderer.ClearColor = new StereoKit.Color(0f, 0f, 0f, 0f);
+                Renderer.EnableSky = false;
+            }
             try
             {
 
@@ -177,6 +187,7 @@ namespace Molecula
         {
 
             UI.WindowBegin("Settings", ref _windowPoseSetting);
+            UI.Label(StereoKit.Device.Name);
             if (_passthrough.Available)
             {
                 var shouldEnable = _passthrough.Enabled;
@@ -189,7 +200,7 @@ namespace Molecula
             UI.Label("Active Text Alpha");
             UI.HSlider("Active", ref activeAlpha, 0f, 1f);
             activeTxtClr.a = activeAlpha;
-            MoleculeData.GetActiveTextStyle().Material.SetColor("color",activeTxtClr);
+            MoleculeData.GetActiveTextStyle().Material.SetColor("color", activeTxtClr);
             UI.WindowEnd();
         }
 
